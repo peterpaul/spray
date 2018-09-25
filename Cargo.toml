@@ -1,0 +1,8 @@
+[package]
+name = "spray"
+version = "0.1.0"
+authors = ["Peterpaul Taekele Klein Haneveld <pp.kleinhaneveld@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+regex = "1"
