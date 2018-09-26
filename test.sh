@@ -2,7 +2,10 @@
 
 tempfiles=$(for i in {1..3}; do echo $i.txt; done; echo stdout.txt)
 cleanup() {
-    rm -f "${tempfiles[@]}"
+    for i in $tempfiles;
+    do
+	rm -f $i
+    done
 }
 trap cleanup 0
 
@@ -26,7 +29,7 @@ echo "Compiling"
 cargo build
 
 echo "Cleaning up before test"
-rm -f "${tempfiles[@]}"
+cleanup
 
 echo "Running tests"
 cat <<HERE | target/debug/spray "^(?P<x>\d{1}):.*" "\$x.txt" > stdout.txt
@@ -52,11 +55,3 @@ tput bold
 tput setaf 2
 echo "All tests passed!"
 tput sgr0
-
-set +x
-echo "Cleaning up after test"
-
-for i in {1..3}; do
-    rm -f $i.txt
-    rm -f stdout.txt
-done
