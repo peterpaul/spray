@@ -8,7 +8,7 @@ done
 
 set -x
 
-cat testdata.in | target/debug/spray "^(?P<x>\d{1}):.*" "\$x.txt"
+cat testdata.in | target/debug/spray "^(?P<x>\d{1}):.*" "\$x.txt" > stdout.txt
 
 grep fiets 1.txt
 grep hond 2.txt
@@ -16,6 +16,7 @@ grep zadel 1.txt
 grep konijn 2.txt
 grep rust 3.txt
 grep emacs 3.txt
+grep somethingelse stdout.txt
 
 echo "All tests passed!"
 
@@ -24,4 +25,5 @@ echo "Cleaning up after test"
 
 for i in {1..3}; do
     rm -f $i.txt
+    rm -f stdout.txt
 done

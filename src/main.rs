@@ -17,18 +17,22 @@ fn main() {
     for line_result in reader.lines() {
         match line_result {
             Ok(line) => {
-                let filename = pattern.replace_all(line.as_str(), replacement).into_owned();
-                let writer = files.entry(filename.clone())
-                    .or_insert_with(|| {
-                        BufWriter::new(OpenOptions::new()
-                            .create(true)
-                            .write(true)
-                            .truncate(false)
-                            .append(true)
-                            .open(filename.clone())
-                            .expect("Failed to open file"))
-                    });
-                writer.write_fmt(format_args!("{}", line)).unwrap();
+                if pattern.is_match(line.as_str()) {
+                    let filename = pattern.replace_all(line.as_str(), replacement).into_owned();
+                    let writer = files.entry(filename.clone())
+                        .or_insert_with(|| {
+                            BufWriter::new(OpenOptions::new()
+                                           .create(true)
+                                           .write(true)
+                                           .truncate(false)
+                                           .append(true)
+                                           .open(filename.clone())
+                                           .expect("Failed to open file"))
+                        });
+                    writer.write_fmt(format_args!("{}", line)).unwrap();
+                } else {
+                    println!("{}", line);
+                }
             },
             Err(e) => {
                 println!("error reading line: {:?}", e);
