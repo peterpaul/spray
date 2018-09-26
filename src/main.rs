@@ -27,7 +27,7 @@ fn main() {
                                            .truncate(false)
                                            .append(true)
                                            .open(filename.clone())
-                                           .expect("Failed to open file"))
+                                           .expect(&format!("Failed to open file '{}'", &filename)))
                         });
                     writer.write_fmt(format_args!("{}\n", line)).unwrap();
                 } else {
