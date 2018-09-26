@@ -29,7 +29,7 @@ fn main() {
                                            .open(filename.clone())
                                            .expect("Failed to open file"))
                         });
-                    writer.write_fmt(format_args!("{}", line)).unwrap();
+                    writer.write_fmt(format_args!("{}\n", line)).unwrap();
                 } else {
                     println!("{}", line);
                 }

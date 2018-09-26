@@ -1,24 +1,57 @@
 #!/usr/bin/env bash
-set -e
+
+tempfiles=$(for i in {1..3}; do echo $i.txt; done; echo stdout.txt)
+cleanup() {
+    rm -f "${tempfiles[@]}"
+}
+trap cleanup 0
+
+error() {
+    local parent_lineno="$1"
+    local message="$2"
+    local code="${3:-1}"
+    tput bold
+    tput setaf 1
+    if [[ -n "$message" ]] ; then
+	echo "Error on or near line ${parent_lineno}: ${message}; exiting with status ${code}"
+    else
+	echo "Error on or near line ${parent_lineno}; exiting with status ${code}"
+    fi
+    tput sgr0
+    exit "${code}"
+}
+trap 'error ${LINENO}' ERR
+
+echo "Compiling"
+cargo build
 
 echo "Cleaning up before test"
-for i in {1..3}; do
-    rm -f $i.txt
-done
+rm -f "${tempfiles[@]}"
 
-set -x
+echo "Running tests"
+cat <<HERE | target/debug/spray "^(?P<x>\d{1}):.*" "\$x.txt" > stdout.txt
+1: first
+2: second
+1: third
+2: fourth
+3: fifth
+3: sixth
+seventh
+HERE
 
-cat testdata.in | target/debug/spray "^(?P<x>\d{1}):.*" "\$x.txt" > stdout.txt
+echo "Validating results"
+grep "first$" 1.txt >> /dev/null
+grep "second$" 2.txt >> /dev/null
+grep "third$" 1.txt >> /dev/null
+grep "fourth$" 2.txt >> /dev/null
+grep "fifth$" 3.txt >> /dev/null
+grep "sixth$" 3.txt >> /dev/null
+grep "seventh$" stdout.txt >> /dev/null
 
-grep fiets 1.txt
-grep hond 2.txt
-grep zadel 1.txt
-grep konijn 2.txt
-grep rust 3.txt
-grep emacs 3.txt
-grep somethingelse stdout.txt
-
+tput bold
+tput setaf 2
 echo "All tests passed!"
+tput sgr0
 
 set +x
 echo "Cleaning up after test"
