@@ -1,3 +1,4 @@
+#[macro_use] extern crate runtime_fmt;
 extern crate regex;
 
 use regex::Regex;
@@ -17,21 +18,28 @@ fn main() {
     for line_result in reader.lines() {
         match line_result {
             Ok(line) => {
-                if pattern.is_match(line.as_str()) {
-                    let filename = pattern.replace_all(line.as_str(), replacement).into_owned();
-                    let writer = files.entry(filename.clone())
-                        .or_insert_with(|| {
-                            BufWriter::new(OpenOptions::new()
-                                           .create(true)
-                                           .write(true)
-                                           .truncate(false)
-                                           .append(true)
-                                           .open(filename.clone())
-                                           .expect(&format!("Failed to open file '{}'", &filename)))
-                        });
-                    writer.write_fmt(format_args!("{}\n", line)).unwrap();
-                } else {
-                    println!("{}", line);
+                match pattern.captures(line.as_str()) {
+                    Some(captures) => {
+                        let filename = rt_format!(replacement,
+                                                  captures.get(0).map_or("", |m| m.as_str()),
+                                                  captures.get(1).map_or("", |m| m.as_str()),
+                                                  captures.get(2).map_or("", |m| m.as_str()),
+                                                  captures.get(3).map_or("", |m| m.as_str()),
+                                                  captures.get(4).map_or("", |m| m.as_str()),
+                                           captures.get(5).map_or("", |m| m.as_str())).unwrap();
+                        let writer = files.entry(filename.clone())
+                            .or_insert_with(|| {
+                                BufWriter::new(OpenOptions::new()
+                                               .create(true)
+                                               .write(true)
+                                               .truncate(false)
+                                               .append(true)
+                                               .open(filename.clone())
+                                               .expect(&format!("Failed to open file '{}'", &filename)))
+                            });
+                        writer.write_fmt(format_args!("{}\n", line)).unwrap();
+                    },
+                    None => println!("{}", line),
                 }
             },
             Err(e) => {

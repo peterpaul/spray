@@ -32,7 +32,7 @@ echo "Cleaning up before test"
 cleanup
 
 echo "Running tests"
-cat <<HERE | target/debug/spray "^(?P<x>\d{1}):.*" "\$x.txt" > stdout.txt
+cat <<HERE | target/debug/spray "^(\d{1})" "{1}.txt" > stdout.txt
 1: first
 2: second
 1: third
